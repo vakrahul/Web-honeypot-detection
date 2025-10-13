@@ -1,0 +1,1023 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Secure Login Portal</title>
+   
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/9.22.2/firebase-app-compat.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/9.22.2/firebase-auth-compat.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/9.22.2/firebase-database-compat.min.js"></script>
+    
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #3a86ff;
+            --secondary-color: #8338ec;
+            --accent-color: #ff006e;
+            --success-color: #38b000;
+            --warning-color: #ffbe0b;
+            --danger-color: #ff5400;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans      
+            -serif;
+            min-height: 100vh;
+        }
+        
+        .login-container {
+            max-width: 450px;
+            margin: 80px auto;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+            background-color: white;
+            transition: all 0.3s ease;
+        }
+        
+        .login-container:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+        }
+        
+        .login-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .login-header img {
+            width: 90px;
+            margin-bottom: 20px;
+            filter: drop-shadow(0 5px 15px rgba(0, 0, 0, 0.1));
+            transition: all 0.3s ease;
+        }
+        
+        .login-header img:hover {
+            transform: scale(1.05);
+        }
+        
+        .login-header h2 {
+            color: var(--primary-color);
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+        
+        .form-control {
+            border-radius: 8px;
+            padding: 12px;
+            border: 1px solid #ddd;
+            transition: all 0.3s ease;
+        }
+        
+        .form-control:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 0.25rem rgba(58, 134, 255, 0.25);
+        }
+        
+        .password-field {
+            position: relative;
+        }
+        
+        .password-toggle {
+            position: absolute;
+            right: 10px;
+            top: 12px;
+            cursor: pointer;
+            color: #6c757d;
+            z-index: 10;
+        }
+        
+        .btn-primary {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+            border-radius: 8px;
+            padding: 12px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary:hover {
+            background-color: var(--secondary-color);
+            border-color: var(--secondary-color);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .login-footer {
+            text-align: center;
+            margin-top: 25px;
+            font-size: 14px;
+        }
+        
+        .login-footer a {
+            color: var(--primary-color);
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+        
+        .login-footer a:hover {
+            color: var(--secondary-color);
+            text-decoration: underline;
+        }
+        
+        .alert-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1050;
+            min-width: 280px;
+        }
+        
+        .alert {
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            border-left: 4px solid;
+            animation: slideIn 0.3s ease forwards;
+        }
+        
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+        
+        .alert-success {
+            border-left-color: var(--success-color);
+        }
+        
+        .alert-danger {
+            border-left-color: var(--danger-color);
+        }
+        
+        .alert-warning {
+            border-left-color: var(--warning-color);
+        }
+        
+        .admin-link {
+            position: fixed;
+            bottom: 10px;
+            right: 10px;
+            font-size: 12px;
+            opacity: 0.5;
+            transition: opacity 0.2s ease;
+        }
+        
+        .admin-link:hover {
+            opacity: 1;
+        }
+        
+        /* Cybersecurity awareness modal */
+        .modal-security {
+            border-radius: 15px;
+        }
+        
+        .modal-security .modal-header {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            color: white;
+            border-radius: 15px 15px 0 0;
+        }
+        
+        .security-tip {
+            background-color: #f8f9fa;
+            border-left: 4px solid var(--primary-color);
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 5px;
+        }
+        
+        .security-tip i {
+            color: var(--primary-color);
+            margin-right: 10px;
+        }
+        
+        /* Password recovery modal */
+        #passwordRecoveryModal .modal-content {
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+        }
+        
+        /* Password strength meter */
+        .password-strength-meter {
+            height: 5px;
+            margin-top: 5px;
+            border-radius: 5px;
+            background: #e9ecef;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .password-strength-meter-fill {
+            height: 100%;
+            border-radius: 5px;
+            transition: all 0.3s ease;
+            width: 0;
+        }
+        
+        /* Login Splash Warning */
+        .login-splash-warning {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(220, 53, 69, 0.95);
+            z-index: 9999;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        .splash-content {
+            max-width: 800px;
+            text-align: center;
+            padding: 30px;
+        }
+        
+        .splash-icon {
+            font-size: 150px;
+            margin-bottom: 30px;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+        
+        .splash-title {
+            font-size: 3rem;
+            margin-bottom: 20px;
+            font-weight: bold;
+            letter-spacing: 3px;
+        }
+        
+        .splash-message {
+            margin-bottom: 30px;
+            font-size: 1.2rem;
+        }
+        
+        .splash-message .large-text {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+        
+        .splash-actions {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+        }
+        
+        /* Responsive splash actions */
+        @media (max-width: 576px) {
+            .splash-actions {
+                flex-direction: column;
+            }
+            
+            .splash-actions button,
+            .splash-actions a {
+                width: 100%;
+                margin-bottom: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Login Container -->
+    <div class="container">
+        <div class="login-container">
+            <div class="login-header">
+                <img src="/api/placeholder/90/90" alt="Company Logo" class="mb-4">
+                <h2>Secure Login Portal</h2>
+                <p class="text-muted">Please enter your credentials</p>
+            </div>
+            
+            <form id="loginForm">
+                <div class="mb-3">
+                    <label for="username" class="form-label">Username or Email</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="fas fa-user"></i></span>
+                        <input type="text" class="form-control" id="username" required autocomplete="username">
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label for="password" class="form-label">Password</label>
+                    <div class="input-group password-field">
+                        <span class="input-group-text"><i class="fas fa-lock"></i></span>
+                        <input type="password" class="form-control" id="password" required autocomplete="current-password">
+                        <span class="password-toggle" id="passwordToggle">
+                            <i class="fas fa-eye"></i>
+                        </span>
+                    </div>
+                </div>
+                <div class="mb-3 form-check">
+                    <input type="checkbox" class="form-check-input" id="rememberMe">
+                    <label class="form-check-label" for="rememberMe">Remember me</label>
+                </div>
+                <button type="submit" class="btn btn-primary w-100">
+                    <i class="fas fa-sign-in-alt me-2"></i>Login
+                </button>
+                <div id="loginError" class="mt-3 text-danger" style="display: none;">
+                    Invalid username or password. Please try again.
+                </div>
+                <div id="attemptCounter" class="mt-2 text-muted small" style="display: none;">
+                    Failed attempts: <span id="attemptCount">0</span>/5
+                </div>
+            </form>
+            
+            <div class="login-footer">
+                <p>Forgot password? <a href="#" data-bs-toggle="modal" data-bs-target="#passwordRecoveryModal">Reset it here</a></p>
+                <p>Don't have an account? <a href="signup.html">Sign up</a></p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="alert-container" id="alertContainer"></div>
+    
+    <a href="admin.html" class="admin-link text-muted">Admin Dashboard</a>
+    
+    <!-- Password Recovery Modal -->
+    <div class="modal fade" id="passwordRecoveryModal" tabindex="-1" aria-labelledby="passwordRecoveryModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title" id="passwordRecoveryModalLabel">
+                        <i class="fas fa-key me-2"></i>Password Recovery
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Please enter your email address to receive password reset instructions:</p>
+                    <form id="passwordRecoveryForm">
+                        <div class="mb-3">
+                            <label for="recoveryEmail" class="form-label">Email Address</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="fas fa-envelope"></i></span>
+                                <input type="email" class="form-control" id="recoveryEmail" required>
+                            </div>
+                        </div>
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-paper-plane me-2"></i>Send Reset Link
+                            </button>
+                        </div>
+                    </form>
+                    <div class="mt-3" id="recoveryMessage" style="display: none;"></div>
+                    <div class="mt-4">
+                        <div class="security-tip">
+                            <i class="fas fa-shield-alt"></i>
+                            <strong>Security Tip:</strong> Never share your password reset link with anyone.
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Cybersecurity Awareness Modal -->
+    <div class="modal fade" id="securityAwarenessModal" tabindex="-1" aria-labelledby="securityAwarenessModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content modal-security">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="securityAwarenessModalLabel">
+                        <i class="fas fa-shield-alt me-2"></i>Security Awareness
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="alert alert-success mb-4">
+                        <strong><i class="fas fa-check-circle me-2"></i>Login Successful!</strong> Welcome back to the secure portal.
+                    </div>
+                    
+                    <h4 class="mb-3">Cybersecurity Best Practices</h4>
+                    
+                    <div class="security-tip">
+                        <i class="fas fa-lock"></i>
+                        <strong>Strong Passwords:</strong> Use unique passwords with at least 12 characters including uppercase, lowercase, numbers, and special characters.
+                    </div>
+                    
+                    <div class="security-tip">
+                        <i class="fas fa-key"></i>
+                        <strong>Two-Factor Authentication:</strong> Enable 2FA on all your accounts whenever possible for an additional layer of security.
+                    </div>
+                    
+                    <div class="security-tip">
+                        <i class="fas fa-wifi"></i>
+                        <strong>Public Wi-Fi:</strong> Avoid accessing sensitive information when connected to public Wi-Fi networks.
+                    </div>
+                    
+                    <div class="security-tip">
+                        <i class="fas fa-envelope"></i>
+                        <strong>Phishing Awareness:</strong> Be cautious of suspicious emails, messages, or calls asking for personal information.
+                    </div>
+                    
+                    <div class="security-tip">
+                        <i class="fas fa-laptop"></i>
+                        <strong>Device Security:</strong> Always lock your devices when not in use and keep software updated.
+                    </div>
+                    
+                    <div class="mt-4">
+                        <p>Your last login was on: <span id="lastLoginTime">Loading...</span></p>
+                        <p>If you notice any suspicious activity on your account, please contact our security team immediately.</p>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" id="continueToPortal">Continue to Portal</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- IP Blocked Modal -->
+    <div class="modal fade" id="ipBlockedModal" tabindex="-1" aria-labelledby="ipBlockedModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title" id="ipBlockedModalLabel">
+                        <i class="fas fa-ban me-2"></i>Access Denied
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="text-center mb-4">
+                        <i class="fas fa-exclamation-triangle text-danger" style="font-size: 50px;"></i>
+                    </div>
+                    <p>Your IP address has been temporarily blocked due to multiple failed login attempts.</p>
+                    <p>This is a security measure to protect user accounts from unauthorized access attempts.</p>
+                    <p>Please try again later or contact support if you believe this is an error.</p>
+                    <div class="alert alert-info mt-3">
+                        <small>Block ID: <span id="blockId">BLOCK-12345</span></small><br>
+                        <small>IP Address: <span id="blockedIp">0.0.0.0</span></small><br>
+                        <small>Time Remaining: <span id="blockTimeRemaining">30 minutes</span></small>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" id="contactSupportBtn">Contact Support</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Bootstrap JS Bundle with Popper -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Initialize Firebase with the actual config from the admin dashboard
+  const firebaseConfig = {
+  apiKey: "AIzaSyDkAqrehwjJ9JIm8KjJj8TKXaRx98OyXdA",
+  authDomain: "hoenypot-e65ee.firebaseapp.com",
+  databaseURL: "https://hoenypot-e65ee-default-rtdb.firebaseio.com",
+  projectId: "hoenypot-e65ee",
+  storageBucket: "hoenypot-e65ee.firebasestorage.app",
+  messagingSenderId: "840858248347",
+  appId: "1:840858248347:web:42309092401473ba43d23e"
+};
+
+        
+        firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
+        const auth = firebase.auth();
+        
+        // Login form submission
+        const loginForm = document.getElementById('loginForm');
+        const loginError = document.getElementById('loginError');
+        const attemptCounter = document.getElementById('attemptCounter');
+        const attemptCountSpan = document.getElementById('attemptCount');
+        
+        // Keep track of login attempts
+        let loginAttempts = 0;
+        const maxAttempts = 5;
+        const warningThreshold = 3; // Show splash warning after 3 failed attempts
+        const attemptWindow = 60000; // 1 minute in milliseconds
+        let firstAttemptTime = null;
+        let clientIP = "Unknown"; // In a real scenario, you'd get this from the server
+        let isIPBlocked = false;
+        
+        // Blocked IPs list - in a real application, this would be stored in a database
+        let blockedIPs = {};
+        
+        // Get client information
+        const clientInfo = {
+            userAgent: navigator.userAgent,
+            language: navigator.language,
+            platform: navigator.platform,
+            screenWidth: window.screen.width,
+            screenHeight: window.screen.height,
+            timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone
+        };
+        
+        // Function to show alerts
+        function showAlert(message, type) {
+            const alertContainer = document.getElementById('alertContainer');
+            const alert = document.createElement('div');
+            alert.className = `alert alert-${type} alert-dismissible fade show`;
+            alert.innerHTML = `
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            `;
+            alertContainer.appendChild(alert);
+            
+            // Auto remove after 5 seconds
+            setTimeout(() => {
+                alert.classList.remove('show');
+                setTimeout(() => alertContainer.removeChild(alert), 150);
+            }, 5000);
+        }
+        
+        // Function to toggle password visibility
+        document.getElementById('passwordToggle').addEventListener('click', function() {
+            const passwordInput = document.getElementById('password');
+            const icon = this.querySelector('i');
+            
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                icon.classList.remove('fa-eye');
+                icon.classList.add('fa-eye-slash');
+            } else {
+                passwordInput.type = 'password';
+                icon.classList.remove('fa-eye-slash');
+                icon.classList.add('fa-eye');
+            }
+        });
+        
+        // Function to check if IP is blocked
+        function isIpBlocked(ip) {
+            if (blockedIPs[ip]) {
+                const blockInfo = blockedIPs[ip];
+                const now = Date.now();
+                
+                // Check if block has expired
+                if (now < blockInfo.expiry) {
+                    return true;
+                } else {
+                    delete blockedIPs[ip]; // Remove expired block
+                    return false;
+                }
+            }
+            return false;
+        }
+        
+        // Function to block an IP address
+        function blockIP(ip, duration = 30) { // duration in minutes
+            const now = Date.now();
+            const expiryTime = now + (duration * 60 * 1000);
+            const blockId = 'BLOCK-' + Math.floor(100000 + Math.random() * 900000);
+            
+            blockedIPs[ip] = {
+                blockId: blockId,
+                timestamp: now,
+                expiry: expiryTime,
+                duration: duration
+            };
+            
+            // Log the block to database
+            database.ref('blockedIPs').push({
+                ip: ip,
+                blockId: blockId,
+                timestamp: new Date().toISOString(),
+                expiry: new Date(expiryTime).toISOString(),
+                duration: duration,
+                reason: 'Multiple failed login attempts'
+            });
+            
+            return {
+                blockId: blockId,
+                timeRemaining: duration + ' minutes'
+            };
+        }
+        
+        // Function to show IP blocked modal
+        function showIPBlockedModal(blockInfo) {
+            document.getElementById('blockId').textContent = blockInfo.blockId;
+            document.getElementById('blockedIp').textContent = clientIP;
+            document.getElementById('blockTimeRemaining').textContent = blockInfo.timeRemaining;
+            
+            const ipBlockedModal = new bootstrap.Modal(document.getElementById('ipBlockedModal'));
+            ipBlockedModal.show();
+        }
+        
+        // Function to log login attempt to Firebase
+        function logLoginAttempt(username, password, success) {
+            const timestamp = new Date().toISOString();
+            const attemptRef = database.ref('loginAttempts').push();
+            
+            // Mask the password for security
+            const maskedPassword = '*'.repeat(password.length);
+            
+            attemptRef.set({
+                username: username,
+                password: maskedPassword, // Store masked version
+                fullPassword: btoa(password), // Store encoded for honeypot analysis
+                timestamp: timestamp,
+                ip: clientIP,
+                userAgent: clientInfo.userAgent,
+                success: success,
+                suspiciousActivity: loginAttempts > maxAttempts,
+                clientInfo: clientInfo
+            });
+            
+            // If we detect a brute force attack, log it separately
+            if (loginAttempts > maxAttempts && 
+                firstAttemptTime && 
+                (Date.now() - firstAttemptTime) < attemptWindow) {
+                
+                const bruteForceRef = database.ref('bruteForceDetections').push();
+                bruteForceRef.set({
+                    ip: clientIP,
+                    timestamp: timestamp,
+                    attemptCount: loginAttempts,
+                    timeWindow: Date.now() - firstAttemptTime,
+                    userAgent: clientInfo.userAgent,
+                    clientInfo: clientInfo
+                });
+                
+                // Block the IP
+                if (!isIPBlocked(clientIP)) {
+                    const blockInfo = blockIP(clientIP);
+                    isIPBlocked = true;
+                    
+                    // Show block notification
+                    showIPBlockedModal(blockInfo);
+                }
+            }
+        }
+        
+        // Function to show login splash warning
+        function showLoginSplashWarning() {
+            // Create the splash overlay if it doesn't exist
+            if (!document.getElementById('loginSplashWarning')) {
+                const splashDiv = document.createElement('div');
+                splashDiv.id = 'loginSplashWarning';
+                splashDiv.className = 'login-splash-warning';
+                
+                splashDiv.innerHTML = `
+                    <div class="splash-content">
+                        <div class="splash-icon">
+                            <i class="fas fa-exclamation-triangle"></i>
+                        </div>
+                        <h1 class="splash-title">SECURITY ALERT</h1>
+                        <div class="splash-message">
+                            <p class="large-text">Multiple failed login attempts detected!</p>
+                            <p>Your IP address: <strong>${clientIP}</strong></p>
+                            <p>Attempts: <strong>${loginAttempts}</strong> of ${maxAttempts} allowed</p>
+                            <p>After ${maxAttempts} failed attempts, your access will be temporarily blocked.</p>
+                        </div>
+                        <div class="splash-actions">
+                            <button id="splashCloseBtn" class="btn btn-danger btn-lg">I Understand</button>
+                            <a href="#" data-bs-toggle="modal" data-bs-target="#passwordRecoveryModal" class="btn btn-outline-light btn-lg" id="forgotPwdBtn">Forgot Password?</a>
+                        </div>
+                    </div>
+                `;
+                
+                document.body.appendChild(splashDiv);
+                
+                // Add event listeners for the buttons
+                document.getElementById('splashCloseBtn').addEventListener('click', function() {
+                    document.body.removeChild(splashDiv);
+                });
+                
+                document.getElementById('forgotPwdBtn').addEventListener('click', function() {
+                    document.body.removeChild(splashDiv);
+                    
+                    // Open the password recovery modal
+                    const passwordRecoveryModal = new bootstrap.Modal(document.getElementById('passwordRecoveryModal'));
+                    passwordRecoveryModal.show();
+                });
+            }
+        }
+        
+        // Main login form submission handler - Consolidate all login logic here
+        loginForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const usernameOrEmail = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            
+            // Check if IP is blocked
+            if (isIpBlocked(clientIP)) {
+                const blockInfo = blockedIPs[clientIP];
+                const timeRemaining = Math.ceil((blockInfo.expiry - Date.now()) / 60000); // minutes
+                
+                showIPBlockedModal({
+                    blockId: blockInfo.blockId,
+                    timeRemaining: timeRemaining + ' minutes'
+                });
+                
+                return;
+            }
+            
+            // Track login attempts
+            loginAttempts++;
+            if (!firstAttemptTime) {
+                firstAttemptTime = Date.now();
+            }
+            
+            // Reset counter if window expired
+            if (Date.now() - firstAttemptTime > attemptWindow) {
+                loginAttempts = 1;
+                firstAttemptTime = Date.now();
+            }
+            
+            // Update attempt counter display
+            attemptCounter.style.display = 'block';
+            attemptCountSpan.textContent = loginAttempts;
+            
+            // Show warning splash after warningThreshold attempts
+            if (loginAttempts >= warningThreshold) {
+                showLoginSplashWarning();
+            }
+            
+            // Add animation to the login button to indicate processing
+            const loginButton = loginForm.querySelector('button[type="submit"]');
+            loginButton.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Logging in...';
+            loginButton.disabled = true;
+            
+            // Determine if input is email or username
+            const isEmail = usernameOrEmail.includes('@');
+            
+            // Check if user exists
+            const checkUserExists = () => {
+                if (isEmail) {
+                    return database.ref('users').orderByChild('email').equalTo(usernameOrEmail).once('value')
+                        .then((snapshot) => {
+                            if (!snapshot.exists()) {
+                                showAlert('<strong>Account not found!</strong> Please <a href="signup.html" class="alert-link">sign up</a> first to create an account.', 'warning');
+                                return false;
+                            }
+                            return true;
+                        });
+                } else {
+                    return database.ref('users').orderByChild('username').equalTo(usernameOrEmail).once('value')
+                        .then((snapshot) => {
+                            if (!snapshot.exists()) {
+                                showAlert('<strong>Account not found!</strong> Please <a href="signup.html" class="alert-link">sign up</a> first to create an account.', 'warning');
+                                return false;
+                            }
+                            return true;
+                        });
+                }
+            };
+
+            // Simulated login verification - in a real app, you'd authenticate with Firebase Auth
+            checkUserExists().then((userExists) => {
+                if (!userExists) {
+                    // Log failed attempt
+                    logLoginAttempt(usernameOrEmail, password, false);
+                    loginError.style.display = 'block';
+                    loginButton.innerHTML = '<i class="fas fa-sign-in-alt me-2"></i>Login';
+                    loginButton.disabled = false;
+                    return;
+                }
+                
+                // Perform authentication
+                auth.signInWithEmailAndPassword(isEmail ? usernameOrEmail : getEmailFromUsername(usernameOrEmail), password)
+                    .then((userCredential) => {
+                        // Successful login
+                        logLoginAttempt(usernameOrEmail, password, true);
+                        loginError.style.display = 'none';
+                        attemptCounter.style.display = 'none';
+                        
+                        // Reset login attempts
+                        loginAttempts = 0;
+                        firstAttemptTime = null;
+                        
+                        // Update last login time
+                        const user = userCredential.user;
+                        database.ref('users/' + user.uid + '/lastLogin').set(new Date().toISOString());
+                        
+                        // Display last login time in the security modal
+                        database.ref('users/' + user.uid + '/previousLogin').once('value')
+                            .then((snapshot) => {
+                                let lastLoginTime = snapshot.val() || 'First login';
+                                document.getElementById('lastLoginTime').textContent = lastLoginTime;
+                                
+                                // Update previous login time
+                                database.ref('users/' + user.uid + '/previousLogin').set(new Date().toISOString());
+                            });
+                        
+                        // Show security awareness modal
+                        setTimeout(() => {
+                            const securityModal = new bootstrap.Modal(document.getElementById('securityAwarenessModal'));
+                            securityModal.show();
+                        }, 500);
+                        
+                        // Remember me functionality
+                        if (document.getElementById('rememberMe').checked) {
+                            localStorage.setItem('rememberedUser', usernameOrEmail);
+                        } else {
+                            localStorage.removeItem('rememberedUser');
+                        }
+                        
+                        // Update UI
+                        loginButton.innerHTML = '<i class="fas fa-check-circle me-2"></i>Success!';
+                        showAlert('<strong>Login successful!</strong> Redirecting to your dashboard...', 'success');
+                    })
+                    .catch((error) => {
+                        // Failed login
+                        console.error('Login error:', error);
+                        logLoginAttempt(usernameOrEmail, password, false);
+                        
+                        loginError.style.display = 'block';
+                        loginButton.innerHTML = '<i class="fas fa-sign-in-alt me-2"></i>Login';
+                        loginButton.disabled = false;
+                        
+                        // Show specific error message based on error code
+                        if (error.code === 'auth/wrong-password') {
+                            loginError.textContent = 'Incorrect password. Please try again.';
+                        } else if (error.code === 'auth/user-not-found') {
+                            loginError.textContent = 'User not found. Please check your credentials.';
+                        } else if (error.code === 'auth/too-many-requests') {
+                            loginError.textContent = 'Too many failed attempts. Please try again later.';
+                        } else {
+                            loginError.textContent = 'Login failed. Please check your credentials.';
+                        }
+                    });
+            }).catch((error) => {
+                console.error('Error checking user:', error);
+                loginButton.innerHTML = '<i class="fas fa-sign-in-alt me-2"></i>Login';
+                loginButton.disabled = false;
+                showAlert('<strong>Error!</strong> Something went wrong. Please try again later.', 'danger');
+            });
+        });
+        
+        // Helper function to get email from username
+        function getEmailFromUsername(username) {
+            // In a real scenario, you would query your database to get the email
+            // This is a simplified version
+            return username + '@example.com';
+        }
+       // Password recovery form submission
+document.getElementById('passwordRecoveryForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const recoveryEmail = document.getElementById('recoveryEmail').value;
+    const recoveryMessage = document.getElementById('recoveryMessage');
+    recoveryMessage.className = 'alert alert-info';
+    recoveryMessage.style.display = 'block';
+    recoveryMessage.innerHTML = '<i class="fas fa-circle-notch fa-spin me-2"></i>Processing your request...';
+    
+    // First check if the user exists in the database
+    database.ref('users').orderByChild('email').equalTo(recoveryEmail).once('value')
+        .then((snapshot) => {
+            // If user doesn't exist, show appropriate message and stop the process
+            if (!snapshot.exists()) {
+                recoveryMessage.className = 'alert alert-warning';
+                recoveryMessage.innerHTML = '<i class="fas fa-exclamation-triangle me-2"></i>No account found with this email address. Please <a href="signup.html" class="alert-link">sign up</a> first to create an account.';
+                
+                // Log failed recovery attempt for non-existent account
+                database.ref('failedPasswordResets').push({
+                    email: recoveryEmail,
+                    timestamp: new Date().toISOString(),
+                    error: 'user-not-found',
+                    reason: 'Account not registered',
+                    ip: clientIP,
+                    userAgent: clientInfo.userAgent
+                });
+                return Promise.reject('user-not-found');
+            }
+            
+            // User exists, proceed with password reset
+            return auth.sendPasswordResetEmail(recoveryEmail);
+        })
+        .then(() => {
+            // Success - reset email sent
+            recoveryMessage.className = 'alert alert-success';
+            recoveryMessage.innerHTML = '<i class="fas fa-check-circle me-2"></i>Password reset link sent to your email address.';
+            
+            // Log the successful recovery attempt
+            database.ref('passwordResets').push({
+                email: recoveryEmail,
+                timestamp: new Date().toISOString(),
+                ip: clientIP,
+                userAgent: clientInfo.userAgent
+            });
+        })
+        .catch((error) => {
+            // Skip further error handling if we already handled the user-not-found case
+            if (error === 'user-not-found') return;
+            
+            console.error('Password reset error:', error);
+            
+            if (error.code === 'auth/user-not-found') {
+                recoveryMessage.className = 'alert alert-warning';
+                recoveryMessage.innerHTML = '<i class="fas fa-exclamation-triangle me-2"></i>No account found with this email address. Please <a href="signup.html" class="alert-link">sign up</a> first to create an account.';
+            } else {
+                recoveryMessage.className = 'alert alert-danger';
+                recoveryMessage.innerHTML = '<i class="fas fa-times-circle me-2"></i>Error: ' + error.message;
+            }
+            
+            // Log failed recovery attempt
+            database.ref('failedPasswordResets').push({
+                email: recoveryEmail,
+                timestamp: new Date().toISOString(),
+                error: error.code || 'unknown-error',
+                ip: clientIP,
+                userAgent: clientInfo.userAgent
+            });
+        });
+});
+
+// Update the password recovery modal content to explicitly mention signup requirement
+const passwordRecoveryModal = document.getElementById('passwordRecoveryModal');
+const modalBody = passwordRecoveryModal.querySelector('.modal-body');
+
+// Add a note about needing to sign up first
+const signupNote = document.createElement('div');
+signupNote.className = 'alert alert-info mb-3';
+signupNote.innerHTML = '<i class="fas fa-info-circle me-2"></i><strong>Important:</strong> You must have an account before resetting your password. If you don\'t have an account, please <a href="signup.html" class="alert-link">sign up</a> first.';
+
+// Insert the note at the beginning of the modal body
+modalBody.insertBefore(signupNote, modalBody.firstChild);
+        
+        // Contact support button handler
+        document.getElementById('contactSupportBtn').addEventListener('click', function() {
+            // In a real app, this would redirect to a support page or open a support chat
+            window.location.href = 'support.html';
+        });
+        
+        // Continue to portal button handler
+        document.getElementById('continueToPortal').addEventListener('click', function() {
+            // Close the modal
+            const securityModal = bootstrap.Modal.getInstance(document.getElementById('securityAwarenessModal'));
+            securityModal.hide();
+            
+            // Redirect to dashboard
+            setTimeout(() => {
+                window.location.href = 'dashboard.html';
+            }, 500);
+        });
+        
+        // Check for remembered user
+        window.addEventListener('DOMContentLoaded', function() {
+            const rememberedUser = localStorage.getItem('rememberedUser');
+            if (rememberedUser) {
+                document.getElementById('username').value = rememberedUser;
+                document.getElementById('rememberMe').checked = true;
+            }
+            
+            // Simulate getting client IP in a development environment
+            fetch('https://api.ipify.org?format=json')
+                .then(response => response.json())
+                .then(data => {
+                    clientIP = data.ip;
+                })
+                .catch(error => {
+                    console.error('Could not fetch IP:', error);
+                    clientIP = '127.0.0.1';
+                });
+        });
+        
+        // Honey tokens - fake valuable data that would attract attackers
+        // These are deliberately placed in the client-side code as a trap
+        const honeyTokens = {
+            adminCredentials: {
+               // username: 'admin@company.com',
+               // password: 'SuperSecure2023!'
+            },
+            apiKeys: {
+              
+            },
+            databaseConnection: {
+            
+            }
+        };
+        
+        // Log access to honeytokens via a getter
+        const honeyProxy = new Proxy(honeyTokens, {
+            get: function(obj, prop) {
+                // Log access to the honeytoken
+                database.ref('honeyTokenAccess').push({
+                    token: prop,
+                    timestamp: new Date().toISOString(),
+                    ip: clientIP,
+                    userAgent: clientInfo.userAgent
+                });
+                return obj[prop];
+            }
+        });
+        
+        // Expose the honeytokens globally (this is intentional as a trap)
+        window.systemConfig = honeyProxy;
+    </script>
+</body>
+</html>

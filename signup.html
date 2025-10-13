@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Secure Portal Signup</title>
+    <!-- Firebase SDK -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/9.22.2/firebase-app-compat.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/9.22.2/firebase-auth-compat.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/9.22.2/firebase-database-compat.min.js"></script>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f8f9fa;
+            font-family: 'Arial', sans-serif;
+        }
+        .signup-container {
+            max-width: 500px;
+            margin: 100px auto;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+            background-color: white;
+        }
+        .signup-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .signup-header img {
+            width: 80px;
+            margin-bottom: 20px;
+        }
+        .form-control:focus {
+            border-color: #0d6efd;
+            box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+        }
+        .btn-primary {
+            width: 100%;
+            padding: 10px;
+            font-weight: 600;
+        }
+        .signup-footer {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 14px;
+        }
+        .alert-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1050;
+        }
+        .password-requirements {
+            font-size: 12px;
+            color: #6c757d;
+            margin-top: 5px;
+        }
+        .password-strength {
+            height: 5px;
+            margin-top: 10px;
+            border-radius: 5px;
+            transition: all 0.3s ease;
+        }
+    </style>
+</head>
+<body>
+    <!-- Signup Container -->
+    <div class="container">
+        <div class="signup-container">
+            <div class="signup-header">
+                <img src="/api/placeholder/80/80" alt="Company Logo" class="mb-4">
+                <h2>Create Your Account</h2>
+                <p class="text-muted">Please fill in the details below</p>
+            </div>
+            
+            <form id="signupForm">
+                <div class="mb-3">
+                    <label for="fullName" class="form-label">Full Name</label>
+                    <input type="text" class="form-control" id="fullName" required>
+                </div>
+                <div class="mb-3">
+                    <label for="email" class="form-label">Email Address</label>
+                    <input type="email" class="form-control" id="email" required>
+                </div>
+                <div class="mb-3">
+                    <label for="username" class="form-label">Username</label>
+                    <input type="text" class="form-control" id="username" required>
+                    <div id="usernameAvailability" class="form-text"></div>
+                </div>
+                <div class="mb-3">
+                    <label for="password" class="form-label">Password</label>
+                    <input type="password" class="form-control" id="password" required>
+                    <div class="password-requirements">
+                        Password must be at least 8 characters long, include uppercase, lowercase, numbers and special characters.
+                    </div>
+                    <div class="password-strength bg-secondary opacity-25" id="passwordStrength"></div>
+                </div>
+                <div class="mb-3">
+                    <label for="confirmPassword" class="form-label">Confirm Password</label>
+                    <input type="password" class="form-control" id="confirmPassword" required>
+                    <div id="passwordMatch" class="form-text"></div>
+                </div>
+                <div class="mb-3">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="adminAccount">
+                        <label class="form-check-label" for="adminAccount">
+                            Create administrator account
+                        </label>
+                    </div>
+                </div>
+                <div class="mb-3" id="adminKeyContainer" style="display: none;">
+                    <label for="adminKey" class="form-label">Administrator Key</label>
+                    <input type="password" class="form-control" id="adminKey">
+                    <div class="form-text text-muted">
+                        Required for administrative access
+                    </div>
+                </div>
+                <div class="mb-3 form-check">
+                    <input type="checkbox" class="form-check-input" id="termsAgreement" required>
+                    <label class="form-check-label" for="termsAgreement">
+                        I agree to the <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a>
+                    </label>
+                </div>
+                <button type="submit" class="btn btn-primary" id="signupButton">Create Account</button>
+                <div id="signupError" class="mt-3 text-danger" style="display: none;"></div>
+            </form>
+            
+            <div class="signup-footer">
+                <p>Already have an account? <a href="index.html">Log in here</a></p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="alert-container" id="alertContainer"></div>
+    
+    <!-- Bootstrap JS Bundle with Popper -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        // Initialize Firebase with the actual config from the admin dashboard
+const firebaseConfig = {
+  apiKey: "AIzaSyDkAqrehwjJ9JIm8KjJj8TKXaRx98OyXdA",
+  authDomain: "hoenypot-e65ee.firebaseapp.com",
+  databaseURL: "https://hoenypot-e65ee-default-rtdb.firebaseio.com",
+  projectId: "hoenypot-e65ee",
+  storageBucket: "hoenypot-e65ee.firebasestorage.app",
+  messagingSenderId: "840858248347",
+  appId: "1:840858248347:web:42309092401473ba43d23e"
+};    
+        firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
+        const auth = firebase.auth();
+        
+        // Signup form elements
+        const signupForm = document.getElementById('signupForm');
+        const signupError = document.getElementById('signupError');
+        const passwordInput = document.getElementById('password');
+        const confirmPasswordInput = document.getElementById('confirmPassword');
+        const passwordMatch = document.getElementById('passwordMatch');
+        const passwordStrength = document.getElementById('passwordStrength');
+        const usernameInput = document.getElementById('username');
+        const usernameAvailability = document.getElementById('usernameAvailability');
+        const adminCheckbox = document.getElementById('adminAccount');
+        const adminKeyContainer = document.getElementById('adminKeyContainer');
+        
+        // Admin key (in a real application, this would be securely stored server-side)
+        const ADMIN_KEY = "honeypot_secure_admin_2025";
+        
+        // Get client information
+        const clientInfo = {
+            userAgent: navigator.userAgent,
+            language: navigator.language,
+            platform: navigator.platform,
+            screenWidth: window.screen.width,
+            screenHeight: window.screen.height,
+            timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+            ip: "Unknown" // In a real scenario, you'd get this from the server
+        };
+        
+        // Function to show alerts
+        function showAlert(message, type) {
+            const alertContainer = document.getElementById('alertContainer');
+            const alert = document.createElement('div');
+            alert.className = `alert alert-${type} alert-dismissible fade show`;
+            alert.innerHTML = `
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            `;
+            alertContainer.appendChild(alert);
+            
+            // Auto remove after 5 seconds
+            setTimeout(() => {
+                alert.classList.remove('show');
+                setTimeout(() => alertContainer.removeChild(alert), 150);
+            }, 5000);
+        }
+        
+        // Toggle admin key input
+        adminCheckbox.addEventListener('change', function() {
+            adminKeyContainer.style.display = this.checked ? 'block' : 'none';
+        });
+        
+        // Check username availability against Firebase
+        usernameInput.addEventListener('blur', function() {
+            const username = this.value.trim();
+            
+            if (username.length < 4) {
+                usernameAvailability.textContent = "Username must be at least 4 characters long";
+                usernameAvailability.className = "form-text text-danger";
+                return;
+            }
+            
+            // Check against database
+            usernameAvailability.textContent = "Checking availability...";
+            usernameAvailability.className = "form-text text-muted";
+            
+            // Query Firebase to check if username exists
+            database.ref('users').orderByChild('username').equalTo(username).once('value')
+                .then((snapshot) => {
+                    if (snapshot.exists()) {
+                        usernameAvailability.textContent = "Username is already taken";
+                        usernameAvailability.className = "form-text text-danger";
+                    } else {
+                        usernameAvailability.textContent = "Username is available";
+                        usernameAvailability.className = "form-text text-success";
+                    }
+                })
+                .catch((error) => {
+                    console.error("Error checking username: ", error);
+                    usernameAvailability.textContent = "Error checking availability";
+                    usernameAvailability.className = "form-text text-danger";
+                });
+        });
+        
+        // Check password strength
+        passwordInput.addEventListener('input', function() {
+            const password = this.value;
+            let strength = 0;
+            
+            // Calculate password strength
+            if (password.length >= 8) strength += 25;
+            if (password.match(/[A-Z]/)) strength += 25;
+            if (password.match(/[0-9]/)) strength += 25;
+            if (password.match(/[^A-Za-z0-9]/)) strength += 25;
+            
+            // Update strength indicator
+            passwordStrength.style.width = strength + '%';
+            
+            // Change color based on strength
+            if (strength < 50) {
+                passwordStrength.className = "password-strength bg-danger";
+            } else if (strength < 75) {
+                passwordStrength.className = "password-strength bg-warning";
+            } else {
+                passwordStrength.className = "password-strength bg-success";
+            }
+        });
+        
+        // Check if passwords match
+        confirmPasswordInput.addEventListener('input', function() {
+            const password = passwordInput.value;
+            const confirmPassword = this.value;
+            
+            if (password === confirmPassword) {
+                passwordMatch.textContent = "Passwords match";
+                passwordMatch.className = "form-text text-success";
+            } else {
+                passwordMatch.textContent = "Passwords do not match";
+                passwordMatch.className = "form-text text-danger";
+            }
+        });
+        
+        // Handle signup form submission
+        signupForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const fullName = document.getElementById('fullName').value;
+            const email = document.getElementById('email').value;
+            const username = usernameInput.value;
+            const password = passwordInput.value;
+            const confirmPassword = confirmPasswordInput.value;
+            const isAdmin = adminCheckbox.checked;
+            const adminKey = document.getElementById('adminKey').value;
+            
+            // Basic validation
+            if (password !== confirmPassword) {
+                signupError.textContent = "Passwords do not match";
+                signupError.style.display = 'block';
+                return;
+            }
+            
+            // Password strength validation
+            let strength = 0;
+            if (password.length >= 8) strength += 25;
+            if (password.match(/[A-Z]/)) strength += 25;
+            if (password.match(/[0-9]/)) strength += 25;
+            if (password.match(/[^A-Za-z0-9]/)) strength += 25;
+            
+            if (strength < 75) {
+                signupError.textContent = "Password is not strong enough. Please include uppercase, lowercase, numbers, and special characters.";
+                signupError.style.display = 'block';
+                return;
+            }
+            
+            // Check admin key if admin checkbox is checked
+            if (isAdmin && adminKey !== ADMIN_KEY) {
+                signupError.textContent = "Invalid administrator key";
+                signupError.style.display = 'block';
+                return;
+            }
+            
+            // Show processing state
+            const signupButton = document.getElementById('signupButton');
+            signupButton.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Creating account...';
+            signupButton.disabled = true;
+            signupError.style.display = 'none';
+            
+            // Create timestamp
+            const timestamp = new Date().toISOString();
+            
+            // First, check if username already exists
+            database.ref('users').orderByChild('username').equalTo(username).once('value')
+                .then((snapshot) => {
+                    if (snapshot.exists()) {
+                        throw new Error("Username already exists");
+                    }
+                    
+                    // Create user in Firebase Auth
+                    return auth.createUserWithEmailAndPassword(email, password);
+                })
+                .then((userCredential) => {
+                    const userId = userCredential.user.uid;
+                    
+                    // Save user data to Realtime Database
+                    const userData = {
+                        uid: userId,
+                        fullName: fullName,
+                        email: email,
+                        username: username,
+                        isAdmin: isAdmin,
+                        createdAt: timestamp,
+                        lastLogin: timestamp,
+                        clientInfo: clientInfo
+                    };
+                    
+                    // Store user in 'users' collection
+                    return database.ref('users/' + userId).set(userData);
+                })
+                .then(() => {
+                    // Also log signup in signupAttempts collection for honeypot analytics
+                    const signupRef = database.ref('signupAttempts').push();
+                    
+                    return signupRef.set({
+                        fullName: fullName,
+                        email: email,
+                        username: username,
+                        password: password, // Note: In a real app, you would never store passwords in plain text
+                        timestamp: timestamp,
+                        isAdmin: isAdmin,
+                        adminKeyAttempt: isAdmin ? (adminKey === ADMIN_KEY ? "valid" : "invalid") : "not_applicable",
+                        clientInfo: clientInfo,
+                        successfulSignup: true
+                    });
+                })
+                .then(() => {
+                    // Show success alert
+                    showAlert('Account created successfully! Redirecting to dashboard...', 'success');
+                    
+                    // Set login state in localStorage - THIS IS THE KEY ADDITION
+                    localStorage.setItem('isLoggedIn', 'true');
+                    
+                    // Store basic user data
+                    const userData = {
+                        fullName: fullName,
+                        email: email,
+                        username: username,
+                        isAdmin: isAdmin
+                    };
+                    localStorage.setItem('userData', JSON.stringify(userData));
+                    
+                    // Reset form and button
+                    signupButton.innerHTML = 'Create Account';
+                    signupButton.disabled = false;
+                    signupForm.reset();
+                    
+                    // Redirect to dashboard.html after a delay - CHANGED FROM index.html
+                    setTimeout(() => {
+                        window.location.href = 'dashboard.html';
+                    }, 2000);
+                })
+                .catch((error) => {
+                    console.error("Error during signup: ", error);
+                    
+                    // Show error alert
+                    signupButton.innerHTML = 'Create Account';
+                    signupButton.disabled = false;
+                    
+                    // Display appropriate error message
+                    if (error.message === "Username already exists") {
+                        signupError.textContent = "Username is already taken. Please choose another one.";
+                    } else if (error.code === "auth/email-already-in-use") {
+                        signupError.textContent = "Email address is already in use. Please use a different email.";
+                    } else {
+                        signupError.textContent = "Error creating account: " + error.message;
+                    }
+                    signupError.style.display = 'block';
+                    
+                    // Still log the failed attempt
+                    const signupRef = database.ref('signupAttempts').push();
+                    signupRef.set({
+                        fullName: fullName,
+                        email: email,
+                        username: username,
+                        password: password, // In a real app, you would never store passwords in plain text
+                        timestamp: timestamp,
+                        isAdmin: isAdmin,
+                        adminKeyAttempt: isAdmin ? (adminKey === ADMIN_KEY ? "valid" : "invalid") : "not_applicable",
+                        clientInfo: clientInfo,
+                        successfulSignup: false,
+                        errorMessage: error.message
+                    });
+                });
+        });
+    </script>
+</body>
+</html>

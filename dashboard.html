@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cybersecurity Information</title>
+    
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #3a86ff;
+            --secondary-color: #8338ec;
+            --accent-color: #ff006e;
+            --success-color: #38b000;
+            --warning-color: #ffbe0b;
+            --danger-color: #ff5400;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            min-height: 100vh;
+            color: #333;
+        }
+        
+        .header {
+            background-color: white;
+            box-shadow: 0 2px 15px rgba(0, 0, 0, 0.1);
+            padding: 15px 0;
+        }
+        
+        .logo {
+            width: 50px;
+            margin-right: 15px;
+        }
+        
+        .navbar-brand {
+            font-weight: 600;
+            color: var(--primary-color);
+        }
+        
+        .navbar-nav .nav-link {
+            color: #333;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+        
+        .navbar-nav .nav-link:hover {
+            color: var(--primary-color);
+        }
+        
+        .navbar-nav .nav-link.active {
+            color: var(--primary-color);
+            border-bottom: 2px solid var(--primary-color);
+        }
+        
+        .content-container {
+            max-width: 1000px;
+            margin: 50px auto;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+            background-color: white;
+        }
+        
+        .section-title {
+            color: var(--primary-color);
+            margin-bottom: 25px;
+            font-weight: 600;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 10px;
+        }
+        
+        .cyber-card {
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            height: 100%;
+        }
+        
+        .cyber-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
+        }
+        
+        .cyber-card-header {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            color: white;
+            padding: 15px;
+            font-weight: 600;
+        }
+        
+        .cyber-card-body {
+            padding: 20px;
+        }
+        
+        .security-tip {
+            background-color: #f8f9fa;
+            border-left: 4px solid var(--primary-color);
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 5px;
+        }
+        
+        .security-tip i {
+            color: var(--primary-color);
+            margin-right: 10px;
+        }
+        
+        .cta-section {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 10px;
+            text-align: center;
+            margin: 40px 0;
+        }
+        
+        .btn-cta {
+            background-color: white;
+            color: var(--primary-color);
+            font-weight: 600;
+            padding: 10px 25px;
+            border-radius: 30px;
+            transition: all 0.3s ease;
+            border: none;
+        }
+        
+        .btn-cta:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            background-color: #f8f9fa;
+        }
+        
+        .threat-level {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+        
+        .threat-high {
+            background-color: #ffcccb;
+            color: #d32f2f;
+        }
+        
+        .threat-medium {
+            background-color: #fff0c2;
+            color: #ff8f00;
+        }
+        
+        .threat-low {
+            background-color: #c8e6c9;
+            color: #388e3c;
+        }
+        
+        .footer {
+            background-color: #343a40;
+            color: white;
+            padding: 30px 0;
+            margin-top: 50px;
+        }
+        
+        .footer a {
+            color: #adb5bd;
+            transition: color 0.2s ease;
+        }
+        
+        .footer a:hover {
+            color: white;
+            text-decoration: none;
+        }
+        
+        .btn-logout {
+            color: white;
+            background-color: var(--danger-color);
+            border: none;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-logout:hover {
+            background-color: #e62e00;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+        }
+        
+        .nav-item.dropdown .dropdown-menu {
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            border: none;
+            overflow: hidden;
+        }
+        
+        .dropdown-item {
+            padding: 10px 20px;
+            transition: all 0.2s ease;
+        }
+        
+        .dropdown-item:hover {
+            background-color: #f8f9fa;
+            color: var(--primary-color);
+        }
+        
+        .dropdown-item.logout {
+            color: var(--danger-color);
+            border-top: 1px solid #eee;
+        }
+        
+        .dropdown-item.logout:hover {
+            background-color: #fff0f0;
+        }
+        
+        #loginAlert {
+            display: none;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header/Navbar -->
+    <header class="header sticky-top">
+        <nav class="navbar navbar-expand-lg navbar-light">
+            <div class="container">
+                <a class="navbar-brand d-flex align-items-center" href="#">
+                    <img src="/api/placeholder/50/50" alt="Security Logo" class="logo">
+                    SecurePortal
+                </a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarNav">
+                    <ul class="navbar-nav ms-auto">
+                        <li class="nav-item">
+                            <a class="nav-link" href="index.html">Home</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link active" href="cybersecurity.html">Cybersecurity</a>
+                        </li>
+                        <li class="nav-item guest-only">
+                            <a class="nav-link" href="signup.html">Sign Up</a>
+                        </li>
+                        <!-- Login/Account dropdown with logout option -->
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="fas fa-user-circle me-1"></i> <span id="accountText">Account</span>
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
+                                <li class="guest-only"><a class="dropdown-item" href="index.html">Login</a></li>
+                                <li class="user-only"><a class="dropdown-item" href="profile.html">Profile</a></li>
+                                <li class="user-only"><a class="dropdown-item" href="settings.html">Settings</a></li>
+                                <li class="user-only"><hr class="dropdown-divider"></li>
+                                <li class="user-only"><a class="dropdown-item logout" href="#" id="logoutButton"><i class="fas fa-sign-out-alt me-2"></i>Logout</a></li>
+                            </ul>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Login Alert for Guest Users -->
+    <div class="container">
+        <div class="alert alert-warning alert-dismissible fade show" role="alert" id="loginAlert">
+            <strong>Welcome!</strong> For the best experience, please <a href="index.html" class="alert-link">login</a> or <a href="signup.html" class="alert-link">sign up</a>.
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="container">
+        <div class="content-container">
+            <h1 class="text-center mb-4">Cybersecurity Awareness</h1>
+            <p class="lead text-center mb-5">Understanding the threats and best practices to stay safe online.</p>
+            
+            <!-- Introduction Section -->
+            <div class="row mb-5">
+                <div class="col-12">
+                    <h2 class="section-title">Why Cybersecurity Matters</h2>
+                    <p>In today's digital world, cybersecurity is more important than ever. As we increasingly conduct our personal and professional lives online, the risk of cyber threats continues to grow. From financial fraud to identity theft, the consequences of poor security practices can be severe.</p>
+                    <p>This guide provides essential information on common cyber threats and practical steps you can take to protect yourself and your organization.</p>
+                </div>
+            </div>
+            
+            <!-- Common Threats Section -->
+            <h2 class="section-title">Common Cyber Threats</h2>
+            <div class="row g-4 mb-5">
+                <div class="col-md-4">
+                    <div class="cyber-card">
+                        <div class="cyber-card-header">
+                            <i class="fas fa-user-secret me-2"></i> Phishing Attacks
+                        </div>
+                        <div class="cyber-card-body">
+                            <span class="threat-level threat-high">High Risk</span>
+                            <p>Phishing attacks use fraudulent communications that appear to come from reputable sources to steal sensitive data like credit card numbers and login credentials.</p>
+                            <p><strong>Warning Signs:</strong></p>
+                            <ul>
+                                <li>Urgent calls to action</li>
+                                <li>Grammar and spelling errors</li>
+                                <li>Suspicious email addresses</li>
+                                <li>Requests for personal information</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="cyber-card">
+                        <div class="cyber-card-header">
+                            <i class="fas fa-virus me-2"></i> Malware
+                        </div>
+                        <div class="cyber-card-body">
+                            <span class="threat-level threat-high">High Risk</span>
+                            <p>Malware is malicious software designed to damage, disrupt, or gain unauthorized access to computer systems.</p>
+                            <p><strong>Types Include:</strong></p>
+                            <ul>
+                                <li>Ransomware</li>
+                                <li>Spyware</li>
+                                <li>Trojans</li>
+                                <li>Worms</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="cyber-card">
+                        <div class="cyber-card-header">
+                            <i class="fas fa-key me-2"></i> Password Attacks
+                        </div>
+                        <div class="cyber-card-body">
+                            <span class="threat-level threat-medium">Medium Risk</span>
+                            <p>Password attacks attempt to steal or crack passwords to gain unauthorized access to systems and data.</p>
+                            <p><strong>Common Methods:</strong></p>
+                            <ul>
+                                <li>Brute force attacks</li>
+                                <li>Dictionary attacks</li>
+                                <li>Credential stuffing</li>
+                                <li>Social engineering</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Best Practices Section -->
+            <h2 class="section-title">Cybersecurity Best Practices</h2>
+            <div class="row mb-5">
+                <div class="col-12">
+                    <div class="security-tip">
+                        <i class="fas fa-lock"></i>
+                        <strong>Use Strong, Unique Passwords:</strong> Create passwords with at least 12 characters, including uppercase letters, lowercase letters, numbers, and special characters. Use a different password for each account.
+                    </div>
+                    
+                    <div class="security-tip">
+                        <i class="fas fa-shield-alt"></i>
+                        <strong>Enable Two-Factor Authentication (2FA):</strong> Add an extra layer of security by requiring a second form of verification beyond just your password.
+                    </div>
+                    
+                    <div class="security-tip">
+                        <i class="fas fa-sync"></i>
+                        <strong>Keep Software Updated:</strong> Regularly update your operating system, applications, and antivirus software to protect against known vulnerabilities.
+                    </div>
+                    
+                    <div class="security-tip">
+                        <i class="fas fa-envelope"></i>
+                        <strong>Be Cautious with Emails:</strong> Don't click on links or download attachments from unknown senders. Verify the sender's email address carefully.
+                    </div>
+                    
+                    <div class="security-tip">
+                        <i class="fas fa-wifi"></i>
+                        <strong>Use Secure Networks:</strong> Avoid using public Wi-Fi for sensitive transactions. Consider using a VPN for additional protection.
+                    </div>
+                    
+                    <div class="security-tip">
+                        <i class="fas fa-laptop"></i>
+                        <strong>Secure Your Devices:</strong> Lock your devices when not in use and use biometric authentication when available.
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Password Manager Section -->
+            <h2 class="section-title">The Importance of Password Managers</h2>
+            <div class="row mb-5">
+                <div class="col-lg-6">
+                    <p>Password managers are tools that generate, store, and manage strong, unique passwords for all your online accounts. They help address one of the biggest security challenges: the human tendency to reuse passwords across multiple sites.</p>
+                    <p><strong>Benefits include:</strong></p>
+                    <ul>
+                        <li>Generating complex, random passwords</li>
+                        <li>Storing passwords securely with encryption</li>
+                        <li>Autofilling credentials on websites</li>
+                        <li>Alerting you to potentially compromised passwords</li>
+                    </ul>
+                    <p>By using a password manager, you only need to remember one master password, making it easier to use strong, unique passwords for every account.</p>
+                </div>
+                <div class="col-lg-6">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <h5 class="card-title">Password Strength Comparison</h5>
+                            <div class="mb-3">
+                                <div class="mb-2"><code>password</code> - Could be cracked instantly</div>
+                                <div class="progress" style="height: 5px;">
+                                    <div class="progress-bar bg-danger" role="progressbar" style="width: 10%"></div>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <div class="mb-2"><code>Password123</code> - Could be cracked in minutes</div>
+                                <div class="progress" style="height: 5px;">
+                                    <div class="progress-bar bg-warning" role="progressbar" style="width: 30%"></div>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <div class="mb-2"><code>P@ssw0rd!2023</code> - Could be cracked in days</div>
+                                <div class="progress" style="height: 5px;">
+                                    <div class="progress-bar bg-info" role="progressbar" style="width: 60%"></div>
+                                </div>
+                            </div>
+                            <div>
+                                <div class="mb-2"><code>j8K#p3qR!7bTzF$9</code> - Would take centuries to crack</div>
+                                <div class="progress" style="height: 5px;">
+                                    <div class="progress-bar bg-success" role="progressbar" style="width: 100%"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Call to Action -->
+            <div class="cta-section">
+                <h3 class="mb-3">Ready to secure your online presence?</h3>
+                <p class="mb-4">Create an account today to access our secure portal and learn more about protecting your digital assets.</p>
+                <a href="signup.html" class="btn btn-cta">Sign Up Now</a>
+            </div>
+            
+            <!-- Additional Resources -->
+            <h2 class="section-title">Additional Resources</h2>
+            <div class="row">
+                <div class="col-md-4 mb-4">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <h5 class="card-title"><i class="fas fa-file-alt me-2"></i>Security Guides</h5>
+                            <p class="card-text">Access detailed guides on various cybersecurity topics, from securing your home network to recognizing social engineering attempts.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-4">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <h5 class="card-title"><i class="fas fa-tools me-2"></i>Security Tools</h5>
+                            <p class="card-text">Discover recommended security tools, including password managers, VPNs, and security scanners to enhance your protection.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-4">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <h5 class="card-title"><i class="fas fa-question-circle me-2"></i>Help Center</h5>
+                            <p class="card-text">Get answers to frequently asked questions and access support if you believe your accounts may have been compromised.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-4 mb-4 mb-md-0">
+                    <h5>SecurePortal</h5>
+                    <p>Your trusted partner in cybersecurity education and protection.</p>
+                </div>
+                <div class="col-md-4 mb-4 mb-md-0">
+                    <h5>Quick Links</h5>
+                    <ul class="list-unstyled">
+                        <li><a href="index.html">Home</a></li>
+                        <li><a href="cybersecurity.html">Cybersecurity</a></li>
+                        <li class="guest-only"><a href="signup.html">Sign Up</a></li>
+                        <li class="guest-only"><a href="index.html">Login</a></li>
+                        <li class="user-only"><a href="#" id="footerLogoutButton">Logout</a></li>
+                    </ul>
+                </div>
+                <div class="col-md-4">
+                    <h5>Contact</h5>
+                    <ul class="list-unstyled">
+                        <li><i class="fas fa-envelope me-2"></i> support@secureportal.example</li>
+                        <li><i class="fas fa-phone me-2"></i> (555) 123-4567</li>
+                    </ul>
+                </div>
+            </div>
+            <hr class="mt-4 mb-4">
+            <div class="row">
+                <div class="col-12 text-center">
+                    <p class="mb-0">&copy; 2025 SecurePortal. All rights reserved.</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Bootstrap JS Bundle with Popper -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Improved Authentication and UI Script -->
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Check if user is logged in
+        const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
+        
+        // Update UI based on login status
+        updateUIForAuthState(isLoggedIn);
+        
+        // Add event listeners to logout buttons
+        setupLogoutButtons();
+        
+        // Show login alert for guests
+        if (!isLoggedIn) {
+            document.getElementById('loginAlert').style.display = 'block';
+        }
+    });
+    
+    function updateUIForAuthState(isLoggedIn) {
+        // Get all elements with user-only and guest-only classes
+        const userOnlyElements = document.querySelectorAll('.user-only');
+        const guestOnlyElements = document.querySelectorAll('.guest-only');
+        
+        // Update account text in dropdown
+        const accountText = document.getElementById('accountText');
+        if (accountText) {
+            accountText.textContent = isLoggedIn ? 'My Account' : 'Account';
+        }
+        
+        // Show/hide elements based on login status
+        userOnlyElements.forEach(el => {
+            el.style.display = isLoggedIn ? '' : 'none';
+        });
+        
+        guestOnlyElements.forEach(el => {
+            el.style.display = isLoggedIn ? 'none' : '';
+        });
+    }
+    
+    function setupLogoutButtons() {
+        // Get references to both logout buttons
+        const logoutButton = document.getElementById('logoutButton');
+        const footerLogoutButton = document.getElementById('footerLogoutButton');
+        
+        // Add event listeners to both logout buttons if they exist
+        if (logoutButton) {
+            logoutButton.addEventListener('click', handleLogout);
+        }
+        
+        if (footerLogoutButton) {
+            footerLogoutButton.addEventListener('click', handleLogout);
+        }
+    }
+    
+    function handleLogout(event) {
+        event.preventDefault();
+        
+        // Clear authentication data
+        localStorage.removeItem('isLoggedIn');
+        localStorage.removeItem('userData');
+        sessionStorage.clear();
+        
+        // Show a success message
+        alert('You have been logged out successfully');
+        
+        // Update UI for guest state
+        updateUIForAuthState(false);
+        
+        // Show login alert
+        document.getElementById('loginAlert').style.display = 'block';
+    }
+    addLogoutToDashboard();
+    
+    // Simulate getting client IP in a development environment
+    fetch('https://api.ipify.org?format=json')
+        .then(response => response.json())
+        .then(data => {
+            clientIP = data.ip;
+        })
+        .catch(error => {
+            console.error('Could not fetch IP:', error);
+            clientIP = '127.0.0.1';
+        });
+        
+    // Check if user is already logged in
+    auth.onAuthStateChanged(function(user) {
+        if (user) {
+            // User is signed in, show appropriate UI or redirect to dashboard
+            if (window.location.pathname.endsWith('index.html') || 
+                window.location.pathname === '/' ||
+                window.location.pathname === '') {
+                window.location.href = 'dashboard.html';
+            }
+        } else {
+            // User is signed out, show login UI
+            if (window.location.pathname.endsWith('dashboard.html')) {
+                window.location.href = 'index.html';
+            }
+        }
+    });
+
+    </script>
+</body>
+</html>
